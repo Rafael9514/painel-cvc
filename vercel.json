@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/painel-cvc-2T26.html" }
+  ]
+}
