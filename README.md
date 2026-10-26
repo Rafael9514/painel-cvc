@@ -25,3 +25,9 @@ Demonstrações Financeiras e Release de Resultados de cada trimestre, disponív
 ## Como atualizar
 
 Os dados ficam no objeto `DADOS.periodos`, no início do script. Cada trimestre é um bloco; os ainda não divulgados estão como `null`. Para liberar um trimestre, troque o `null` pelo bloco de dados com a mesma estrutura dos demais: o botão do trimestre e todos os cálculos são atualizados automaticamente.
+
+## Autoria
+
+© 2026 · APP desenvolvido por Rafael Miranda Feitosa | Controladoria | CVC Corp
+
+Marca, logotipo e imagens pertencem à CVC Corp. Dados extraídos de documentos públicos de Relações com Investidores.
