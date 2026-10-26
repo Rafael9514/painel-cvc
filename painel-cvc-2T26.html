@@ -189,6 +189,7 @@ h2::before { content: ""; width: 4px; height: 18px; background: var(--amarelo); 
 .grade-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 12px; }
 .kpi { background: var(--surface); border: 1px solid var(--borda); border-top: 3px solid var(--acento); border-radius: var(--raio); padding: 14px 16px; }
 .kpi-rot { font-size: 13px; color: var(--tx-2); font-weight: 600; margin: 0; }
+.kpi-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .kpi-rot small { font-weight: 400; color: var(--tx-3); font-size: 12px; }
 .kpi-valor { font-size: 30px; font-weight: 650; line-height: 1.15; margin: 6px 0 4px; display: inline-block; }
 .delta { font-size: 13px; font-weight: 600; margin: 0; }
@@ -202,7 +203,8 @@ h2::before { content: ""; width: 4px; height: 18px; background: var(--amarelo); 
 .card { background: var(--surface); border: 1px solid var(--borda); border-radius: var(--raio); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
 .card-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .card h3 { font-size: 14.5px; margin: 0; font-weight: 650; }
-.info { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--borda-forte); background: var(--surface-2); color: var(--tx-2); font: 600 12px/1 var(--fonte); cursor: help; padding: 0; }
+.info { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--borda-forte); background: var(--surface-2); color: var(--tx-2); font: 600 12px/1 var(--fonte); cursor: help; padding: 0; transition: border-color .15s ease, color .15s ease; }
+.info:hover, .info:focus-visible { border-color: var(--acento); color: var(--acento); }
 .card-v { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .valor { font-size: 26px; font-weight: 650; line-height: 1.1; }
 .valor.nd { font-size: 22px; color: var(--tx-2); }
@@ -300,7 +302,8 @@ table.dem.dmpl thead th:first-child { text-align: left; }
 .assinatura p { margin: 2px 0; }
 .assinatura strong { color: var(--tx-2); font-weight: 600; }
 
-#tip { position: fixed; z-index: 50; max-width: min(380px, calc(100vw - 24px)); background: var(--tip-bg); color: var(--tip-tx); font-size: 12.5px; line-height: 1.45; padding: 8px 10px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.2); white-space: pre-line; pointer-events: none; }
+#tip::first-line { font-weight: 700; }
+#tip { position: fixed; z-index: 50; max-width: min(470px, calc(100vw - 24px)); background: var(--tip-bg); color: var(--tip-tx); font-size: 12.5px; line-height: 1.45; padding: 8px 10px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.2); white-space: pre-line; pointer-events: none; }
 
 .so-print { display: none; }
 
@@ -1784,6 +1787,12 @@ function calcularIndices(D) {
       conta: `${n1(R.lucroLiquido.s)} ÷ ((${n1(pl.c)} + ${n1(pl.a)}) ÷ 2) = ${n1(R.lucroLiquido.s)} ÷ ${n1(plMed)}`,
       contaComp: plMedComp == null ? 'N/D' : `${n1(R.lucroLiquido.sc)} ÷ ${contaPlComp} = ${n1(R.lucroLiquido.sc)} ÷ ${n1(plMedComp)}`,
       fontes: [R.lucroLiquido, pl, H.plInicioAcumComp, H.plFimComp], criterio: C.retorno,
+      insumos: [
+        { rot: 'Lucro líquido do exercício', a: R.lucroLiquido.s, c: R.lucroLiquido.sc, ref: ref(R.lucroLiquido, true) },
+        { rot: 'PL no início do exercício', a: pl.c, c: H.plInicioAcumComp ? H.plInicioAcumComp.v : null, ref: `${ref(pl)}; ${ref(H.plInicioAcumComp)}` },
+        { rot: 'PL no fim do exercício', a: pl.a, c: H.plFimComp ? H.plFimComp.v : null, ref: `${ref(pl)}; ${ref(H.plFimComp)}` },
+        { rot: 'PL médio', a: plMed, c: plMedComp, ref: 'calculado' }
+      ],
       nota: `Como a DF do ${M.trimestre} cobre o exercício inteiro, o lucro de ${M.acumulado} já é o LTM: o ROE é calculado diretamente.`
     });
     const invMed = ((pl.c + X.dividaBruta.c) + (pl.a + X.dividaBruta.a)) / 2;
@@ -1799,6 +1808,13 @@ function calcularIndices(D) {
       ndComp: dbIni ? dbIni.nd : null,
       conta: contaRoi, contaComp: invMedComp == null ? `N/D — ${dbIni ? dbIni.nd : ''}` : `${n1(R.ebit.sc * (1 - aliq))} ÷ ${n1(invMedComp)}`,
       fontes: [R.ebit, pl, B.debenturesCP, B.debenturesLP], criterio: C.retorno,
+      insumos: [
+        { rot: 'EBIT do exercício', a: R.ebit.s, c: R.ebit.sc, ref: ref(R.ebit, true) },
+        { rot: `EBIT × (1 − ${pct(aliq, 0)})`, a: nopat, c: R.ebit.sc * (1 - aliq), ref: 'calculado' },
+        { rot: 'PL + dívida bruta no início do exercício', a: pl.c + X.dividaBruta.c, c: null, ref: `${ref(pl)}; debêntures ${ref(B.debenturesCP)}` },
+        { rot: 'PL + dívida bruta no fim do exercício', a: pl.a + X.dividaBruta.a, c: null, ref: `${ref(pl)}; debêntures ${ref(B.debenturesCP)}` },
+        { rot: 'Capital investido médio', a: invMed, c: invMedComp, ref: 'calculado' }
+      ],
       nota: `Com a DF anual, o EBIT de ${M.acumulado} já é o LTM. Fórmula usada: EBIT × (1 − 34%) ÷ média de (PL + debêntures CP + LP) entre ${M.dataBalancoComp} e ${M.dataBase}. A alíquota nominal de 34% é aplicada mesmo com prejuízo antes do IR.`
     });
   }
@@ -1832,7 +1848,8 @@ function calcularIndices(D) {
     conta: `(${n1(X.dividaBruta.a)} − ${n1(B.caixa.a)} − ${n1(B.aplicacoes.a)}) ÷ ${n1(L.ebitdaAjLTM.t)} = ${n1(X.dividaLiquida.a)} ÷ ${n1(L.ebitdaAjLTM.t)}`,
     contaComp: compPropria
       ? `(${n1(X.dividaBruta.c)} − ${n1(B.caixa.c)} − ${n1(B.aplicacoes.c)}) ÷ ${n1(L.ebitdaAjLTM.tc)} = ${n1(X.dividaLiquida.c)} ÷ ${n1(L.ebitdaAjLTM.tc)}`
-      : `${n1(L.dividaLiquida.tc)} ÷ ${n1(L.ebitdaAjLTM.tc)} (definição do Release; ${ND.alavancagemComp || ''})`,
+      : `${n1(L.dividaLiquida.tc)} ÷ ${n1(L.ebitdaAjLTM.tc)}`,
+    notaComp: compPropria ? null : `Comparativo pela definição do Release. ${ND.alavancagemComp || ''}`.trim(),
     fontes: [B.debenturesCP, B.debenturesLP, B.caixa, B.aplicacoes, L.ebitdaAjLTM, L.dividaLiquida, { ref: `Covenant — DF ${M.trimestre}, p.${NBSP}${D.covenant.pag}` }],
     criterio: C.alavancagem,
     divulgado: { v: L.alavancagem.t, rot: `Divulgado (${ref(L.alavancagem)})` },
@@ -1846,7 +1863,32 @@ function calcularIndices(D) {
     nota: `Dívida líquida calculada: ${mi(X.dividaLiquida.a)}; divulgada: ${mi(L.dividaLiquida.t)}. A diferença vem das definições (ver conferência). ${ebitdaLtmTxt}`
   });
 
+  /* valores utilizados em cada índice, mostrados no (i) do card: [atual, comparativo] em R$ mi + página de origem */
+  const ins = (rot, it, ka, kc, acumulado) => ({ rot, a: it[ka], c: kc ? it[kc] : null, ref: ref(it, acumulado) });
+  const insCalc = (rot, a, c, origem) => ({ rot, a, c, ref: origem });
+  const INSUMOS = {
+    liqCorrente: [ins('Ativo circulante', ac, 'a', 'c'), ins('Passivo circulante', pc, 'a', 'c')],
+    liqSeca: [ins('Ativo circulante', ac, 'a', 'c'), insCalc('Estoques', est('a'), est('c'), `${ref(B.estoques)}: sem rubrica, considerado zero`), ins('Passivo circulante', pc, 'a', 'c')],
+    liqGeral: [ins('Ativo circulante', ac, 'a', 'c'), insCalc('Realizável a longo prazo', X.rlp.a, X.rlp.c, `soma de ${nRlp} linhas do ativo não circulante, ${ref(B.ativoNaoCirculante)}`),
+      ins('Passivo circulante', pc, 'a', 'c'), ins('Passivo não circulante', pnc, 'a', 'c')],
+    margemBruta: [ins('Lucro bruto', R.lucroBruto, kT, kTC, anual), ins('Receita líquida', R.receitaLiquida, kT, kTC, anual)],
+    margemLiquida: [ins('Lucro (prejuízo) líquido', R.lucroLiquido, kT, kTC, anual), ins('Receita líquida', R.receitaLiquida, kT, kTC, anual)],
+    margemEbitda: [ins('EBIT (lucro antes do resultado financeiro)', R.ebit, kT, kTC, anual), ins('Depreciação e amortização', R.deprecAmort, kT, kTC, anual),
+      insCalc('EBITDA = EBIT + D&A', X.ebitda[kT], X.ebitda[kTC], 'calculado'), ins('Receita líquida', R.receitaLiquida, kT, kTC, anual)],
+    margemEbitdaAj: [ins('EBITDA ajustado', L.ebitdaAjustado, kT, kTC), ins('Receita líquida gerencial', L.receitaLiquida, kT, kTC)],
+    endividamento: [ins('Passivo circulante', pc, 'a', 'c'), ins('Passivo não circulante', pnc, 'a', 'c'), ins('Ativo total', at, 'a', 'c')],
+    alavancagem: [
+      insCalc('Dívida bruta (debêntures CP + LP)', X.dividaBruta.a, compPropria ? X.dividaBruta.c : null, ref(B.debenturesCP)),
+      ins('Caixa e equivalentes de caixa', B.caixa, 'a', compPropria ? 'c' : null),
+      ins('Aplicações financeiras', B.aplicacoes, 'a', compPropria ? 'c' : null),
+      insCalc('Dívida líquida calculada', X.dividaLiquida.a, compPropria ? X.dividaLiquida.c : null, 'calculado'),
+      ins('EBITDA ajustado LTM', L.ebitdaAjLTM, 't', 'tc'),
+      ...(compPropria ? [] : [ins('Dívida líquida (definição do Release)', L.dividaLiquida, 't', 'tc')])
+    ]
+  };
+
   for (const ind of lista) {
+    ind.insumos = ind.insumos || INSUMOS[ind.id] || [];
     ind.status = avaliar(ind.criterio, ind.atual);
     if (!ind.delta) ind.delta = { v: (ind.atual != null && ind.comp != null) ? ind.atual - ind.comp : null, rot: 'Variação' };
   }
@@ -1998,6 +2040,25 @@ function montarRodape(D) {
   );
 }
 
+/* texto do (i): fórmula, contas do período atual e comparativo e valores utilizados com a página de origem */
+function textoCalculo(ind) {
+  const fmt = FMT[ind.tipo], valor = x => (x == null ? '–' : n1(x));
+  const linhas = [
+    `${ind.nome} = ${ind.formula}`,
+    '',
+    `${ind.rotAtual}: ${ind.conta} = ${fmt(ind.atual)}`,
+    ind.comp != null ? `${ind.rotComp}: ${ind.contaComp} = ${fmt(ind.comp)}` : `${ind.rotComp}: N/D${ind.ndComp ? ` — ${ind.ndComp}` : ''}`
+  ];
+  if (ind.notaComp) linhas.push(`(${ind.notaComp})`);
+  if (ind.insumos.length) {
+    linhas.push('', `Valores utilizados, em R$ milhões (${ind.rotAtual} | ${ind.rotComp}):`);
+    ind.insumos.forEach(i => linhas.push(`• ${i.rot}: ${valor(i.a)}${i.c != null ? ` | ${valor(i.c)}` : ''} — ${i.ref}`));
+  }
+  linhas.push('', `Semáforo: ${ind.criterio.texto}`);
+  return linhas.join('\n');
+}
+const botaoInfo = (texto, rotulo) => el('button', { class: 'info', type: 'button', 'data-tip': texto, 'aria-label': `${rotulo}: ${texto}` }, 'i');
+
 /* ---------- KPIs ---------- */
 function montarKPIs(D, calc) {
   const R = D.dre, L = D.release, M = D.meta, P = calc.P;
@@ -2006,7 +2067,7 @@ function montarKPIs(D, calc) {
   document.getElementById('h-kpi').textContent = P.anual ? `Resumo do exercício de ${rotT}` : `Resumo do ${rotT}`;
   document.getElementById('kpi-desc').textContent = (P.anual
     ? `Exercício de ${rotT} contra ${rotTC}, porque a DF do ${M.trimestre} é anual; o ${M.trimestre} isolado aparece como referência. `
-    : `Variação a/a contra o ${rotTC}. `) + 'Passe o cursor (ou toque) sobre um valor para ver a fórmula e a página da fonte.';
+    : `Variação a/a contra o ${rotTC}. `) + 'Passe o cursor (ou toque) no (i) de cada card para ver o cálculo, os valores usados e a página da fonte.';
   const variacao = (a, c) => {
     if (a == null || c == null) return { d: null, txt: 'Variação N/D' };
     if (c > 0 && a >= 0) { const v = a / c - 1; return { d: v, txt: `${seta(v)} ${comSinal(pct(v), v)} a/a` }; }
@@ -2023,22 +2084,47 @@ function montarKPIs(D, calc) {
     ? `${M.acumulado}: ${mi(R.lucroLiquido.s)} (${M.acumuladoComp}: ${mi(R.lucroLiquido.sc)})`
     : P.anual ? `${M.trimestre}: ${mi(L.lucroLiquido.t)} (${M.trimestreComp}: ${mi(L.lucroLiquido.tc)}; ${ref(L.lucroLiquido)})` : null;
   const dAlav = alav.delta.v;
+  /* conta da variação a/a: % quando a base é positiva; diferença em R$ quando é negativa */
+  const contaVar = (a, c) => (c > 0 && a >= 0
+    ? `${n1(a)} ÷ ${n1(c)} − 1 = ${comSinal(pct(a / c - 1), a / c - 1)}`
+    : `${n1(a)} − (${n1(c)}) = ${fmtDelta('mi', a - c)}`);
+  const linhaVal = (rot, it, k, acum) => `${rot}: ${mi(it[k])} — ${ref(it, acum)}`;
+  const calcReceita = [
+    `Receita líquida (DF) — ${rotT} × ${rotTC}`, '',
+    linhaVal(rotT, R.receitaLiquida, kT, P.anual), linhaVal(rotTC, R.receitaLiquida, kTC, P.anual),
+    `Variação: ${contaVar(R.receitaLiquida[kT], R.receitaLiquida[kTC])}`, '',
+    `Release (gerencial, lucro bruto após reclassificação cambial): ${contaVar(L.receitaLiquida[kT], L.receitaLiquida[kTC])} — ${ref(L.receitaLiquida)}`
+  ].join('\n');
+  const calcEbitda = [
+    `EBITDA ajustado (Release) — ${rotT} × ${rotTC}`, '',
+    linhaVal(rotT, L.ebitdaAjustado, kT), linhaVal(rotTC, L.ebitdaAjustado, kTC),
+    `Variação: ${contaVar(L.ebitdaAjustado[kT], L.ebitdaAjustado[kTC])}`, '',
+    `Margem ${rotT}: ${n1(L.ebitdaAjustado[kT])} ÷ ${n1(L.receitaLiquida[kT])} = ${pct(mAj)}`,
+    `Margem ${rotTC}: ${n1(L.ebitdaAjustado[kTC])} ÷ ${n1(L.receitaLiquida[kTC])} = ${pct(mAjC)} (receita gerencial, ${ref(L.receitaLiquida)})`,
+    `EBITDA ajustado LTM: ${mi(L.ebitdaAjLTM.t)} — ${ref(L.ebitdaAjLTM)}`
+  ].join('\n');
+  const calcLucro = [
+    `Lucro (prejuízo) líquido (DF) — ${rotT} × ${rotTC}`, '',
+    linhaVal(rotT, R.lucroLiquido, kT, P.anual), linhaVal(rotTC, R.lucroLiquido, kTC, P.anual),
+    `Variação: ${contaVar(R.lucroLiquido[kT], R.lucroLiquido[kTC])}`,
+    R.lucroLiquido[kTC] <= 0 ? 'Com base negativa, a variação é mostrada em R$ (a variação % não tem sentido).' : null
+  ].filter(x => x != null).join('\n');
   const tiles = [
-    { rot: 'Receita Líquida', origem: `DF · ${rotT}`, valor: mi(R.receitaLiquida[kT]), dica: refLonga(R.receitaLiquida, P.anual),
+    { rot: 'Receita Líquida', origem: `DF · ${rotT}`, valor: mi(R.receitaLiquida[kT]), dica: refLonga(R.receitaLiquida, P.anual), calculo: calcReceita,
       d: vRL.d, dTxt: vRL.txt, melhor: 'maior',
       comp: `${rotTC}: ${mi(R.receitaLiquida[kTC])}`,
       sub: [`Release (gerencial): ${mi(L.receitaLiquida[kT])} (${comSinal(pct(vRLg), vRLg)})`,
         P.anual && L.receitaBaseDF ? `${M.trimestre}: ${mi(L.receitaBaseDF.t)} (base DF, ${ref(L.receitaBaseDF)})` : null] },
-    { rot: 'EBITDA Ajustado', origem: `Release · ${rotT}`, valor: mi(L.ebitdaAjustado[kT]), dica: refLonga(L.ebitdaAjustado),
+    { rot: 'EBITDA Ajustado', origem: `Release · ${rotT}`, valor: mi(L.ebitdaAjustado[kT]), dica: refLonga(L.ebitdaAjustado), calculo: calcEbitda,
       d: vEA.d, dTxt: vEA.txt, melhor: 'maior',
       comp: `${rotTC}: ${mi(L.ebitdaAjustado[kTC])}`,
       sub: [`Margem ${pct(mAj)} (${fmtDelta('%', mAj - mAjC)}) · LTM ${mi(L.ebitdaAjLTM.t)}`,
         P.anual ? `${M.trimestre}: ${mi(L.ebitdaAjustado.t)} (${comSinal(pct(vEAt), vEAt)} a/a)` : null] },
-    { rot: 'Lucro Líquido', origem: `DF · ${rotT}`, valor: mi(R.lucroLiquido[kT]), dica: refLonga(R.lucroLiquido, P.anual),
+    { rot: 'Lucro Líquido', origem: `DF · ${rotT}`, valor: mi(R.lucroLiquido[kT]), dica: refLonga(R.lucroLiquido, P.anual), calculo: calcLucro,
       d: vLL.d, dTxt: vLL.txt, melhor: 'maior',
       comp: `${rotTC}: ${mi(R.lucroLiquido[kTC])}`,
       sub: [subLucro, R.lucroLiquido[kTC] <= 0 ? 'Variação % não aplicável (base negativa)' : null] },
-    { rot: 'Dívida Líquida / EBITDA', origem: `cálculo · ${M.dataBase}`, valor: mult(alav.atual), dica: `Cálculo ${M.dataBase}: ${alav.conta} = ${mult(alav.atual)}\n${fontesTexto(alav.fontes)}`,
+    { rot: 'Dívida Líquida / EBITDA', origem: `cálculo · ${M.dataBase}`, valor: mult(alav.atual), dica: `Cálculo ${M.dataBase}: ${alav.conta} = ${mult(alav.atual)}\n${fontesTexto(alav.fontes)}`, calculo: textoCalculo(alav),
       d: dAlav, melhor: 'menor',
       dTxt: alav.compPropria
         ? `${seta(dAlav)} ${fmtDelta('x', dAlav)} a/a (${M.trimestreComp}: ${mult(alav.comp)})`
@@ -2049,7 +2135,7 @@ function montarKPIs(D, calc) {
   const box = document.getElementById('kpis');
   for (const t of tiles) {
     box.append(el('article', { class: 'kpi' },
-      el('p', { class: 'kpi-rot' }, t.rot, ' ', el('small', {}, `(${t.origem})`)),
+      el('div', { class: 'kpi-topo' }, el('p', { class: 'kpi-rot' }, t.rot, ' ', el('small', {}, `(${t.origem})`)), botaoInfo(t.calculo, `Cálculo de ${t.rot}`)),
       comDica('span', 'kpi-valor', t.valor, t.dica),
       el('p', { class: `delta ${classeDelta(t.d, t.melhor)}` }, t.dTxt),
       el('p', { class: 'kpi-sub' }, t.comp),
@@ -2079,7 +2165,7 @@ function semaforo(status) {
 function montarCard(ind) {
   const M = D_ATUAL.meta;
   const fmt = FMT[ind.tipo];
-  const dicaFormula = [`Fórmula: ${ind.formula}`, `Critério: ${ind.criterio.texto}`].join('\n');
+  const dicaFormula = textoCalculo(ind);
   let valorTxt, valorDica, valorCls = 'valor';
   if (ind.atual == null) { valorTxt = 'N/D'; valorCls += ' nd'; valorDica = `Dado não disponível nos documentos.\n${ind.nd}`; }
   else { valorTxt = fmt(ind.atual); valorDica = `Cálculo ${ind.rotAtual}: ${ind.conta} = ${fmt(ind.atual)}\nFontes:\n${fontesTexto(ind.fontes)}`; }
@@ -2094,7 +2180,7 @@ function montarCard(ind) {
 
   return el('article', { class: 'card', 'data-status': ind.status, id: `card-${ind.id}` },
     el('div', { class: 'card-h' }, el('h3', {}, ind.nome),
-      el('button', { class: 'info', type: 'button', 'data-tip': dicaFormula, 'aria-label': `Fórmula e critério: ${dicaFormula}` }, 'i')),
+      botaoInfo(dicaFormula, `Cálculo de ${ind.nome}`)),
     el('div', { class: 'card-v' }, comDica('span', valorCls, valorTxt, valorDica), semaforo(ind.status)),
     dl.childNodes.length ? dl : null,
     (ind.extras || []).map(t => el('p', { class: 'card-extra' }, t)),
@@ -2617,7 +2703,7 @@ function montarConferencia(D, calc) {
     el('tbody', {}, calc.lista.map(i => {
       const f = FMT[i.tipo];
       const resC = i.comp == null ? 'N/D' : f(i.comp);
-      return el('tr', {}, el('td', {}, el('strong', {}, i.nome)), el('td', {}, i.formula), el('td', {}, `${i.rotAtual}: ${i.conta}`), el('td', { class: 'n' }, f(i.atual)), el('td', {}, `${i.rotComp}: ${i.contaComp}`), el('td', { class: 'n' }, resC),
+      return el('tr', {}, el('td', {}, el('strong', {}, i.nome)), el('td', {}, i.formula), el('td', {}, `${i.rotAtual}: ${i.conta}`), el('td', { class: 'n' }, f(i.atual)), el('td', {}, `${i.rotComp}: ${i.contaComp}${i.notaComp ? ` (${i.notaComp})` : ''}`), el('td', { class: 'n' }, resC),
         el('td', {}, ROTULO_STATUS[i.status]));
     })));
 
@@ -2805,6 +2891,7 @@ function iniciarDicas() {
     x = Math.max(8, Math.min(x, window.innerWidth - t.width - 8));
     let y = r.top - t.height - 8;
     if (y < 8) y = r.bottom + 8;
+    y = Math.max(8, Math.min(y, window.innerHeight - t.height - 8));
     tip.style.left = `${x}px`;
     tip.style.top = `${y}px`;
   };
