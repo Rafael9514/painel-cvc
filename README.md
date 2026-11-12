@@ -4,7 +4,7 @@ Painel independente de indicadores financeiros da CVC Corp, elaborado a partir d
 
 ## O que o painel mostra
 
-- Seletor de trimestres (4T25, 1T26 e 2T26; 3T26 e 4T26 aguardando divulgação)
+- Seletor de trimestres (4T25, 1T26, 2T26 e 3T26; 4T26 aguardando divulgação)
 - Resumo: receita líquida, EBITDA ajustado, lucro líquido e dívida líquida / EBITDA
 - Índices de liquidez, rentabilidade e endividamento, com fórmula, comparativo e semáforo
 - Gráficos de resultado, margens e composição da dívida
